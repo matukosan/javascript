@@ -272,6 +272,7 @@ export const esES: LocalizationResource = {
         title: 'Contraseña',
         primaryButton__changePassword: 'Cambiar contraseña',
         primaryButton__setPassword: 'Establecer contraseña ',
+        primaryButton__removePassword: '',
       },
       mfaSection: {
         title: 'Verificación de dos pasos',
@@ -401,8 +402,10 @@ export const esES: LocalizationResource = {
     },
     passwordPage: {
       title: 'Configurar la clave',
+      removePasswordTitle: '',
       changePasswordTitle: 'Cambiar contraseña',
       successMessage: 'Su contraseña ha sido establecida.',
+      removePasswordSuccessMessage: '',
       changePasswordSuccessMessage: 'Tu contraseña ha sido actualizada.',
       sessionsSignedOutSuccessMessage: 'Todos los demás dispositivos han cerrado sesión.',
     },

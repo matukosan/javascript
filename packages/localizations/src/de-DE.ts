@@ -272,6 +272,7 @@ export const deDE: LocalizationResource = {
         title: 'Passwort',
         primaryButton__changePassword: 'Passwort ändern',
         primaryButton__setPassword: 'Passwort festlegen',
+        primaryButton__removePassword: '',
       },
       mfaSection: {
         title: 'Zweifaktor-Authentifizierung',
@@ -398,8 +399,10 @@ export const deDE: LocalizationResource = {
     },
     passwordPage: {
       title: 'Passwort festlegen',
+      removePasswordTitle: '',
       changePasswordTitle: 'Passwort ändern',
       successMessage: 'Ihr Passwort wurde festgelegt.',
+      removePasswordSuccessMessage: '',
       changePasswordSuccessMessage: 'Dein Passwort wurde aktualisiert.',
       sessionsSignedOutSuccessMessage: 'Alle anderen Geräte wurden abgemeldet.',
     },
