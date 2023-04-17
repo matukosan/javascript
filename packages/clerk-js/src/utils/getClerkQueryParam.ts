@@ -10,7 +10,7 @@ const ClerkQueryParams = [
   CLERK_SATELLITE_URL,
 ] as const;
 
-type ClerkQueryParam = typeof ClerkQueryParams[number];
+type ClerkQueryParam = (typeof ClerkQueryParams)[number];
 
 type ClerkQueryParamsToValuesMap = {
   __clerk_status: VerificationStatus;
