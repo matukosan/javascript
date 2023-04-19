@@ -1,6 +1,6 @@
 import type { FieldId } from '@clerk/types';
 import type { ClerkAPIError } from '@clerk/types';
-import React, { forwardRef, useMemo } from 'react';
+import React, { forwardRef, useEffect, useState, useMemo } from 'react';
 
 import type { LocalizationKey } from '../customizables';
 import {
@@ -9,6 +9,8 @@ import {
   FormControl as FormControlPrim,
   FormErrorText,
   FormLabel,
+  FormSuccessText,
+  FormText,
   Icon,
   Input,
   Link,
@@ -16,7 +18,9 @@ import {
   Text,
   useLocalizations,
 } from '../customizables';
+import { CheckCircle, ExclamationCircle } from '../icons';
 import type { PropsOfComponent } from '../styledSystem';
+import { animations } from '../styledSystem';
 import { useCardState } from './contexts';
 import { useFormState } from './Form';
 import { PasswordInput } from './PasswordInput';
@@ -38,6 +42,8 @@ type FormControlProps = Omit<PropsOfComponent<typeof Input>, 'label' | 'placehol
   isSuccessful: boolean;
   hasLostFocus: boolean;
   enableErrorAfterBlur?: boolean;
+  direction?: string;
+  isFocused: boolean;
 };
 
 // TODO: Convert this into a Component?
@@ -52,6 +58,35 @@ const getInputElementForType = (type: FormControlProps['type']) => {
   const customInput = type as keyof typeof CustomInputs;
   return CustomInputs[customInput] || Input;
 };
+
+function useDelayUnmount(isMounted: string, delayTime: number) {
+  const [shouldRender, setShouldRender] = React.useState('');
+
+  React.useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    if (isMounted && !shouldRender) {
+      setShouldRender(isMounted);
+    } else if (!isMounted && shouldRender) {
+      timeoutId = setTimeout(() => setShouldRender(''), delayTime);
+    }
+    return () => clearTimeout(timeoutId);
+  }, [isMounted, delayTime, shouldRender]);
+  return shouldRender;
+}
+
+function useDebounce<T>(value: T, delay?: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay || 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props, ref) => {
   const { t } = useLocalizations();
@@ -73,6 +108,8 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
     setSuccessful,
     hasLostFocus,
     enableErrorAfterBlur,
+    direction,
+    isFocused: _isFocused,
     ...rest
   } = props;
   const hasError = !!errorText && hasLostFocus;
@@ -80,6 +117,15 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
 
   const InputElement = getInputElementForType(props.type);
   const isCheckbox = props.type === 'checkbox';
+
+  const _errorText = enableErrorAfterBlur ? hasLostFocus && errorText : errorText;
+  const shouldRenderChild = useDelayUnmount(_errorText || '', 500);
+
+  const isFocused = useDebounce(_isFocused, 200);
+
+  const _isSuccess = enableErrorAfterBlur ? hasLostFocus && isSuccessful : isSuccessful;
+  const _isSuccessMessage = _isSuccess ? 'Nice work. Your password is good' : '';
+  const isSuccessMessage = useDelayUnmount(_isSuccessMessage || '', 500);
 
   const shouldDisplayError = useMemo(() => {
     if (enableErrorAfterBlur) {
@@ -190,12 +236,69 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
           )}
         </Flex>
       </Flex>
-      <FormErrorText
-        elementDescriptor={descriptors.formFieldErrorText}
-        elementId={descriptors.formFieldErrorText.setId(id)}
-      >
-        {shouldDisplayError && errorText}
-      </FormErrorText>
+
+      {isFocused && !isSuccessMessage && (
+        <FormText
+          variant='smallRegular'
+          colorScheme='neutral'
+          sx={t => ({
+            animation: `${isFocused ? animations.inAnimation : animations.outAnimation} 500ms ${
+              t.transitionTiming.$common
+            }`,
+          })}
+        >
+          {direction}
+        </FormText>
+      )}
+
+      {!isFocused && shouldRenderChild && (
+        <FormErrorText
+          elementDescriptor={descriptors.formFieldErrorText}
+          elementId={descriptors.formFieldErrorText.setId(id)}
+          sx={t => ({
+            animation: `${_errorText ? animations.inAnimation : animations.outAnimation} 500ms ${
+              t.transitionTiming.$common
+            }`,
+          })}
+        >
+          <Flex
+            direction={'row'}
+            align={'center'}
+            gap={2}
+          >
+            <Icon
+              colorScheme={'danger'}
+              icon={ExclamationCircle}
+            />
+            {shouldRenderChild}
+          </Flex>
+        </FormErrorText>
+      )}
+
+      {!shouldRenderChild && isSuccessMessage && (
+        <FormSuccessText
+          elementDescriptor={descriptors.formFieldErrorText}
+          elementId={descriptors.formFieldErrorText.setId(id)}
+          colorScheme={'neutral'}
+          sx={t => ({
+            animation: `${_isSuccessMessage ? animations.inAnimation : animations.outAnimation} 500ms ${
+              t.transitionTiming.$common
+            }`,
+          })}
+        >
+          <Flex
+            direction={'row'}
+            align={'center'}
+            gap={2}
+          >
+            <Icon
+              colorScheme={'success'}
+              icon={CheckCircle}
+            />
+            {isSuccessMessage}
+          </Flex>
+        </FormSuccessText>
+      )}
     </FormControlPrim>
   );
 });

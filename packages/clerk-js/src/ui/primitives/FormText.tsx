@@ -15,9 +15,9 @@ const { applyVariants } = createVariants(theme => ({
   variants: {},
 }));
 
-type FormErrorTextProps = React.PropsWithChildren<StyleVariants<typeof applyVariants> & TextProps>;
+type FormTextProps = React.PropsWithChildren<StyleVariants<typeof applyVariants> & TextProps>;
 
-export const FormErrorText = (props: FormErrorTextProps) => {
+export const FormText = (props: FormTextProps) => {
   const { hasError, errorMessageId } = useFormControl() || {};
 
   if (!hasError && !props.children) {
@@ -27,7 +27,7 @@ export const FormErrorText = (props: FormErrorTextProps) => {
   return (
     <Text
       variant='smallRegular'
-      colorScheme='danger'
+      colorScheme='neutral'
       aria-live='polite'
       id={errorMessageId}
       {...props}

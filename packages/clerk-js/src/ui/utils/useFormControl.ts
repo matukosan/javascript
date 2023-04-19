@@ -14,6 +14,7 @@ type Options = {
   options?: SelectOption[];
   checked?: boolean;
   enableErrorAfterBlur?: boolean;
+  direction?: string;
 } & (
   | {
       complexity?: never;
@@ -33,11 +34,13 @@ type FieldStateProps<Id> = {
   value: string;
   onChange: React.ChangeEventHandler<HTMLInputElement>;
   onBlur: React.FocusEventHandler<HTMLInputElement>;
+  onFocus: React.FocusEventHandler<HTMLInputElement>;
   hasLostFocus: boolean;
   errorText: string | undefined;
   setError: (error: string | ClerkAPIError | undefined) => void;
   setSuccessful: (isSuccess: boolean) => void;
   isSuccessful: boolean;
+  isFocused: boolean;
 } & Options;
 
 export type FormControlState<Id = string> = FieldStateProps<Id> & {
@@ -60,6 +63,7 @@ export const useFormControl = <Id extends string>(
     placeholder: '',
     options: [],
     enableErrorAfterBlur: false,
+    direction: '',
   };
   const { translateError } = useLocalizations();
   const [value, setValueInternal] = React.useState<string>(initialState);
@@ -67,6 +71,7 @@ export const useFormControl = <Id extends string>(
   const [errorText, setErrorText] = React.useState<string | undefined>(undefined);
   const [isSuccessful, setIsSuccessful] = React.useState(false);
   const [hasLostFocus, setHasLostFocus] = React.useState(false);
+  const [isFocused, setFocused] = React.useState(false);
 
   const onChange: FormControlState['onChange'] = event => {
     if (opts?.type === 'checkbox') {
@@ -75,7 +80,12 @@ export const useFormControl = <Id extends string>(
     return setValueInternal(event.target.value || '');
   };
 
+  const onFocus: FormControlState['onFocus'] = () => {
+    setFocused(true);
+  };
+
   const onBlur: FormControlState['onBlur'] = () => {
+    setFocused(false);
     setHasLostFocus(true);
   };
 
@@ -109,6 +119,8 @@ export const useFormControl = <Id extends string>(
     setError,
     onChange,
     onBlur,
+    onFocus,
+    isFocused,
     enableErrorAfterBlur: opts.enableErrorAfterBlur || false,
     ...opts,
   };

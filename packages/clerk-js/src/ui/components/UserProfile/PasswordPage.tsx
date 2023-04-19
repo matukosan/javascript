@@ -49,6 +49,8 @@ export const PasswordPage = withCardStateProvider(() => {
     enableErrorAfterBlur: true,
     complexity: true,
     strengthMeter: true,
+    direction:
+      'Your password needs to be at least 8 characters. Include multiple words and phrases to make it more secure.',
   });
   const confirmField = useFormControl('confirmPassword', '', {
     type: 'password',
