@@ -1,9 +1,10 @@
 import { useCallback, useRef } from 'react';
 
 import { useWizard, Wizard } from '../../common';
-import { useCoreUser } from '../../contexts';
-import { localizationKeys } from '../../customizables';
+import { useCoreUser, useEnvironment } from '../../contexts';
 import { ContentPage, Form, FormButtons, SuccessPage, useCardState, withCardStateProvider } from '../../elements';
+import { usePasswordComplexity } from '../../hooks';
+import { localizationKeys } from '../../localization';
 import { handleError, useFormControl } from '../../utils';
 import { UserProfileBreadcrumbs } from './UserProfileNavbar';
 
@@ -42,6 +43,11 @@ export const PasswordPage = withCardStateProvider(() => {
     isRequired: true,
   });
 
+  const {
+    userSettings: { passwordSettings },
+  } = useEnvironment();
+  const { failedValidationsText } = usePasswordComplexity(passwordSettings);
+
   const passwordField = useFormControl('newPassword', '', {
     type: 'password',
     label: localizationKeys('formFieldLabel__newPassword'),
@@ -49,8 +55,7 @@ export const PasswordPage = withCardStateProvider(() => {
     enableErrorAfterBlur: true,
     complexity: true,
     strengthMeter: true,
-    direction:
-      'Your password needs to be at least 8 characters. Include multiple words and phrases to make it more secure.',
+    direction: failedValidationsText,
   });
   const confirmField = useFormControl('confirmPassword', '', {
     type: 'password',

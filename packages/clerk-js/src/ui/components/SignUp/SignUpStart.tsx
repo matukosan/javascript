@@ -15,7 +15,7 @@ import {
   withCardStateProvider,
 } from '../../elements';
 import { useCardState } from '../../elements/contexts';
-import { useLoadingStatus, useNavigate } from '../../hooks';
+import { useLoadingStatus, useNavigate, usePasswordComplexity } from '../../hooks';
 import type { FormControlState } from '../../utils';
 import { buildRequest, handleError, useFormControl } from '../../utils';
 import { SignUpForm } from './SignUpForm';
@@ -38,6 +38,11 @@ function _SignUpStart(): JSX.Element {
     getInitialActiveIdentifier(attributes, userSettings.signUp.progressive),
   );
   const [missingRequirementsWithTicket, setMissingRequirementsWithTicket] = React.useState(false);
+
+  const {
+    userSettings: { passwordSettings },
+  } = useEnvironment();
+  const { failedValidationsText } = usePasswordComplexity(passwordSettings);
 
   const formState = {
     firstName: useFormControl('firstName', signUp.firstName || '', {
@@ -72,8 +77,7 @@ function _SignUpStart(): JSX.Element {
       enableErrorAfterBlur: true,
       complexity: true,
       strengthMeter: true,
-      direction:
-        'Your password needs to be at least 8 characters. Include multiple words and phrases to make it more secure. Your password needs to be at least 8 characters. Include multiple words and phrases to make it more secure.',
+      direction: failedValidationsText,
     }),
     ticket: useFormControl(
       'ticket',
