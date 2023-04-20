@@ -1,6 +1,6 @@
 import type { FieldId } from '@clerk/types';
 import type { ClerkAPIError } from '@clerk/types';
-import React, { forwardRef, useEffect, useState, useMemo } from 'react';
+import React, { forwardRef, useMemo } from 'react';
 
 import type { LocalizationKey } from '../customizables';
 import {
@@ -44,6 +44,12 @@ type FormControlProps = Omit<PropsOfComponent<typeof Input>, 'label' | 'placehol
   enableErrorAfterBlur?: boolean;
   direction?: string;
   isFocused: boolean;
+  debouncedState?: {
+    errorText: string | undefined;
+    isSuccessful: boolean;
+    isFocused: boolean;
+    direction: string | undefined;
+  };
 };
 
 // TODO: Convert this into a Component?
@@ -65,27 +71,13 @@ function useDelayUnmount(isMounted: string, delayTime: number) {
   React.useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
     if (isMounted && !shouldRender) {
-      setShouldRender(isMounted);
+      timeoutId = setTimeout(() => setShouldRender(isMounted), delayTime);
     } else if (!isMounted && shouldRender) {
       timeoutId = setTimeout(() => setShouldRender(''), delayTime);
     }
     return () => clearTimeout(timeoutId);
   }, [isMounted, delayTime, shouldRender]);
   return shouldRender;
-}
-
-function useDebounce<T>(value: T, delay?: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay || 500);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
 }
 
 export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props, ref) => {
@@ -110,6 +102,7 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
     enableErrorAfterBlur,
     direction,
     isFocused: _isFocused,
+    debouncedState,
     ...rest
   } = props;
   const hasError = !!errorText && hasLostFocus;
@@ -119,13 +112,19 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
   const isCheckbox = props.type === 'checkbox';
 
   const _errorText = enableErrorAfterBlur ? hasLostFocus && errorText : errorText;
-  const shouldRenderChild = useDelayUnmount(_errorText || '', 500);
+  const shouldRenderChild = useDelayUnmount(debouncedState?.errorText || '', 500);
+  // const shouldRenderChild = useDelayUnmount(_errorText || '', 500);
 
-  const isFocused = useDebounce(_isFocused, 200);
+  // console.log(debouncedState);
+  // const isFocused = useDebounce(_isFocused, 500);
 
-  const _isSuccess = enableErrorAfterBlur ? hasLostFocus && isSuccessful : isSuccessful;
-  const _isSuccessMessage = _isSuccess ? 'Nice work. Your password is good' : '';
+  // const _isSuccess = enableErrorAfterBlur ? hasLostFocus && isSuccessful : isSuccessful;
+  const _isSuccessMessage = debouncedState?.isSuccessful ? 'Nice work. Your password is good' : '';
+  // const _isSuccessMessage = _isSuccess ? 'Nice work. Your password is good' : '';
   const isSuccessMessage = useDelayUnmount(_isSuccessMessage || '', 500);
+
+  const directionMessage = useDelayUnmount(debouncedState?.isFocused ? direction || '' : '', 500);
+  // const directionMessage = useDelayUnmount(_isFocused ? direction || '' : '', 500);
 
   const shouldDisplayError = useMemo(() => {
     if (enableErrorAfterBlur) {
@@ -237,26 +236,34 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
         </Flex>
       </Flex>
 
-      {isFocused && !isSuccessMessage && (
+      {/*<Box*/}
+      {/*  sx={{*/}
+      {/*    position: 'absolute',*/}
+      {/*    top: '60px',*/}
+      {/*  }}*/}
+      {/*>*/}
+      {directionMessage && !isSuccessMessage && (
         <FormText
           variant='smallRegular'
           colorScheme='neutral'
           sx={t => ({
-            animation: `${isFocused ? animations.inAnimation : animations.outAnimation} 500ms ${
+            fontSize: '12px',
+            animation: `${debouncedState?.isFocused ? animations.inAnimation : animations.outAnimation} 600ms ${
               t.transitionTiming.$common
             }`,
           })}
         >
-          {direction}
+          {directionMessage}
         </FormText>
       )}
 
-      {!isFocused && shouldRenderChild && (
+      {!directionMessage && shouldRenderChild && (
         <FormErrorText
           elementDescriptor={descriptors.formFieldErrorText}
           elementId={descriptors.formFieldErrorText.setId(id)}
           sx={t => ({
-            animation: `${_errorText ? animations.inAnimation : animations.outAnimation} 500ms ${
+            fontSize: '12px',
+            animation: `${debouncedState?.errorText ? animations.inAnimation : animations.outAnimation} 600ms ${
               t.transitionTiming.$common
             }`,
           })}
@@ -281,7 +288,8 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
           elementId={descriptors.formFieldErrorText.setId(id)}
           colorScheme={'neutral'}
           sx={t => ({
-            animation: `${_isSuccessMessage ? animations.inAnimation : animations.outAnimation} 500ms ${
+            fontSize: '12px',
+            animation: `${debouncedState?.isSuccessful ? animations.inAnimation : animations.outAnimation} 600ms ${
               t.transitionTiming.$common
             }`,
           })}
@@ -299,6 +307,7 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
           </Flex>
         </FormSuccessText>
       )}
+      {/*</Box>*/}
     </FormControlPrim>
   );
 });
