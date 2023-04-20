@@ -19,6 +19,7 @@ import {
   Text,
   useLocalizations,
 } from '../customizables';
+import { usePrefersReducedMotion } from '../hooks';
 import { CheckCircle, ExclamationCircle } from '../icons';
 import type { PropsOfComponent, ThemableCssProp } from '../styledSystem';
 import { animations } from '../styledSystem';
@@ -81,12 +82,28 @@ function useDelayUnmount(isMounted: string, delayTime: number) {
   return shouldRender;
 }
 
-function getFormTextAnimation(enterAnimation: boolean): ThemableCssProp {
-  return t => ({
-    animation: `${enterAnimation ? animations.inAnimation : animations.outAnimation} 600ms ${
-      t.transitionTiming.$common
-    }`,
-  });
+function useFormTextAnimation() {
+  const prefersReducedMotion = usePrefersReducedMotion();
+
+  const getFormTextAnimation = useCallback(
+    (enterAnimation: boolean): ThemableCssProp => {
+      if (prefersReducedMotion) {
+        return {
+          animation: 'none',
+        };
+      }
+      return t => ({
+        animation: `${enterAnimation ? animations.inAnimation : animations.outAnimation} 600ms ${
+          t.transitionTiming.$common
+        }`,
+      });
+    },
+    [prefersReducedMotion],
+  );
+
+  return {
+    getFormTextAnimation,
+  };
 }
 
 export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props, ref) => {
@@ -145,6 +162,8 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
       });
     }
   }, []);
+
+  const { getFormTextAnimation } = useFormTextAnimation();
 
   const shouldDisplayError = useMemo(() => {
     if (enableErrorAfterBlur) {
