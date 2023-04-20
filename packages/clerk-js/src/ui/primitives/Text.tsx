@@ -1,3 +1,5 @@
+import React from 'react';
+
 import type { PrimitiveProps, StyleVariants } from '../styledSystem';
 import { common, createVariants } from '../styledSystem';
 import { applyDataStateProps } from './applyDataStateProps';
@@ -43,12 +45,13 @@ export type TextProps = PrimitiveProps<'p'> & { isDisabled?: boolean } & StyleVa
     as?: 'p' | 'div' | 'label' | 'code' | 'span' | 'li' | 'a';
   };
 
-export const Text = (props: TextProps): JSX.Element => {
+export const Text = React.forwardRef<HTMLElement, TextProps>((props, ref): JSX.Element => {
   const { as: As = 'p', ...rest } = props;
   return (
     <As
       {...applyDataStateProps(filterProps(rest))}
       css={applyVariants(props)}
+      ref={ref as unknown as any}
     />
   );
-};
+});

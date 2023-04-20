@@ -25,6 +25,7 @@ export const FormSuccessText = (props: FormSuccessTextProps) => {
   }
 
   return (
+    // @ts-expect-error
     <Text
       variant='smallRegular'
       colorScheme='success'

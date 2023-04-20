@@ -25,6 +25,7 @@ export const FormErrorText = (props: FormErrorTextProps) => {
   }
 
   return (
+    // @ts-expect-error
     <Text
       variant='smallRegular'
       colorScheme='danger'

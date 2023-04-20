@@ -72,6 +72,8 @@ function _SignUpStart(): JSX.Element {
       enableErrorAfterBlur: true,
       complexity: true,
       strengthMeter: true,
+      direction:
+        'Your password needs to be at least 8 characters. Include multiple words and phrases to make it more secure. Your password needs to be at least 8 characters. Include multiple words and phrases to make it more secure.',
     }),
     ticket: useFormControl(
       'ticket',
