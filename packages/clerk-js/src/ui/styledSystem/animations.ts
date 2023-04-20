@@ -41,7 +41,7 @@ const inAnimation = keyframes`
   100% {
     opacity: 1;
     transform: translateY(0px);
-    max-height: 3rem;
+    max-height: 6rem;
   }
 `;
 
@@ -49,7 +49,7 @@ const outAnimation = keyframes`
   20% {
     opacity: 1;
     transform: translateY(0px);
-    max-height: 3rem;
+    max-height: 6rem;
   }
   80% {
     opacity: 0;

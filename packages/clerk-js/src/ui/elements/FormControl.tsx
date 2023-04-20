@@ -4,6 +4,7 @@ import React, { forwardRef, useMemo } from 'react';
 
 import type { LocalizationKey } from '../customizables';
 import {
+  Box,
   descriptors,
   Flex,
   FormControl as FormControlPrim,
@@ -151,10 +152,12 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
     >
       <Flex
         direction={isCheckbox ? 'row' : 'columnReverse'}
-        sx={{
-          // Setting height to 100% fixes issue with Firefox for our PhoneInput
-          height: '100%',
-        }}
+        sx={
+          {
+            // Setting height to 100% fixes issue with Firefox for our PhoneInput
+            // height: '100%',
+          }
+        }
       >
         <InputElement
           elementDescriptor={descriptors.formFieldInput}
@@ -236,77 +239,106 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
         </Flex>
       </Flex>
 
+      {(directionMessage || isSuccessMessage || shouldRenderChild) && (
+        <Box
+          style={{
+            height: '2rem',
+            position: 'relative',
+          }}
+          sx={t => ({
+            animation: `${
+              debouncedState?.isFocused || _isSuccessMessage || debouncedState?.errorText
+                ? animations.inAnimation
+                : animations.outAnimation
+            } 600ms ${t.transitionTiming.$common}`,
+          })}
+        >
+          {directionMessage && !isSuccessMessage && (
+            <FormText
+              variant='smallRegular'
+              colorScheme='neutral'
+              style={{
+                position: 'absolute',
+                top: '0px',
+              }}
+              sx={t => ({
+                fontSize: '12px',
+                animation: `${debouncedState?.isFocused ? animations.inAnimation : animations.outAnimation} 600ms ${
+                  t.transitionTiming.$common
+                }`,
+              })}
+            >
+              {directionMessage}
+            </FormText>
+          )}
+          {!directionMessage && shouldRenderChild && (
+            <FormErrorText
+              elementDescriptor={descriptors.formFieldErrorText}
+              elementId={descriptors.formFieldErrorText.setId(id)}
+              style={{
+                position: 'absolute',
+                top: '0px',
+              }}
+              sx={t => ({
+                fontSize: '12px',
+                animation: `${debouncedState?.errorText ? animations.inAnimation : animations.outAnimation} 600ms ${
+                  t.transitionTiming.$common
+                }`,
+              })}
+            >
+              <Flex
+                direction={'row'}
+                align={'center'}
+                gap={2}
+              >
+                <Icon
+                  colorScheme={'danger'}
+                  icon={ExclamationCircle}
+                />
+                {shouldRenderChild}
+              </Flex>
+            </FormErrorText>
+          )}
+          {!shouldRenderChild && isSuccessMessage && (
+            <FormSuccessText
+              elementDescriptor={descriptors.formFieldErrorText}
+              elementId={descriptors.formFieldErrorText.setId(id)}
+              colorScheme={'neutral'}
+              style={{
+                position: 'absolute',
+                top: '0px',
+              }}
+              sx={t => ({
+                fontSize: '12px',
+                animation: `${debouncedState?.isSuccessful ? animations.inAnimation : animations.outAnimation} 600ms ${
+                  t.transitionTiming.$common
+                }`,
+              })}
+            >
+              <Flex
+                direction={'row'}
+                align={'center'}
+                gap={2}
+              >
+                <Icon
+                  colorScheme={'success'}
+                  icon={CheckCircle}
+                />
+                {isSuccessMessage}
+              </Flex>
+            </FormSuccessText>
+          )}
+          {/*<p>dwad</p>*/}
+        </Box>
+      )}
+
       {/*<Box*/}
       {/*  sx={{*/}
       {/*    position: 'absolute',*/}
       {/*    top: '60px',*/}
       {/*  }}*/}
       {/*>*/}
-      {directionMessage && !isSuccessMessage && (
-        <FormText
-          variant='smallRegular'
-          colorScheme='neutral'
-          sx={t => ({
-            fontSize: '12px',
-            animation: `${debouncedState?.isFocused ? animations.inAnimation : animations.outAnimation} 600ms ${
-              t.transitionTiming.$common
-            }`,
-          })}
-        >
-          {directionMessage}
-        </FormText>
-      )}
 
-      {!directionMessage && shouldRenderChild && (
-        <FormErrorText
-          elementDescriptor={descriptors.formFieldErrorText}
-          elementId={descriptors.formFieldErrorText.setId(id)}
-          sx={t => ({
-            fontSize: '12px',
-            animation: `${debouncedState?.errorText ? animations.inAnimation : animations.outAnimation} 600ms ${
-              t.transitionTiming.$common
-            }`,
-          })}
-        >
-          <Flex
-            direction={'row'}
-            align={'center'}
-            gap={2}
-          >
-            <Icon
-              colorScheme={'danger'}
-              icon={ExclamationCircle}
-            />
-            {shouldRenderChild}
-          </Flex>
-        </FormErrorText>
-      )}
-
-      {!shouldRenderChild && isSuccessMessage && (
-        <FormSuccessText
-          elementDescriptor={descriptors.formFieldErrorText}
-          elementId={descriptors.formFieldErrorText.setId(id)}
-          colorScheme={'neutral'}
-          sx={t => ({
-            fontSize: '12px',
-            animation: `${debouncedState?.isSuccessful ? animations.inAnimation : animations.outAnimation} 600ms ${
-              t.transitionTiming.$common
-            }`,
-          })}
-        >
-          <Flex
-            direction={'row'}
-            align={'center'}
-            gap={2}
-          >
-            <Icon
-              colorScheme={'success'}
-              icon={CheckCircle}
-            />
-            {isSuccessMessage}
-          </Flex>
-        </FormSuccessText>
-      )}
       {/*</Box>*/}
     </FormControlPrim>
   );
