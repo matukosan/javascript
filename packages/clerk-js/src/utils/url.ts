@@ -1,7 +1,7 @@
 import { camelToSnake, createDevOrStagingUrlCache, isIPV4Address } from '@clerk/shared';
 import type { SignUpResource } from '@clerk/types';
 
-import { loadScript } from '../utils';
+import { glob, loadScript } from '../utils';
 import { joinPaths } from './path';
 import { getQueryParams } from './querystring';
 
@@ -361,4 +361,27 @@ export const mergeFragmentIntoUrl = (_url: string | URL): URL => {
 
 export const pathFromFullPath = (fullPath: string) => {
   return fullPath.replace(/CLERK-ROUTER\/(.*?)\//, '');
+};
+
+const isAllowedRedirect = (_url: string, allowedRedirectOrigins: string[]) => {
+  const url = new URL(_url, DUMMY_URL_BASE);
+
+  //is relative url
+  if (url.origin === DUMMY_URL_BASE) {
+    return true;
+  }
+
+  return allowedRedirectOrigins.some(allowedOrigin => glob(allowedOrigin, url.href));
+};
+
+export const getFirstAllowedRedirectAndWarn = (urls: string[], allowedRedirectOrigins: string[]) => {
+  return urls.find(url => {
+    if (!isAllowedRedirect(url, allowedRedirectOrigins)) {
+      console.warn(
+        `Redirect URL ${url} is not on one of the allowedRedirectOrigins, falling back to the default redirect URL.`,
+      );
+      return false;
+    }
+    return true;
+  });
 };

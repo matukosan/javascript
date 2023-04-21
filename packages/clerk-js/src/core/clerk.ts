@@ -22,6 +22,7 @@ import type {
   ClientResource,
   CreateOrganizationParams,
   CreateOrganizationProps,
+  CustomNavigation,
   DomainOrProxyUrl,
   EnvironmentJSON,
   EnvironmentResource,
@@ -60,6 +61,7 @@ import {
   createPageLifecycle,
   errorThrower,
   getClerkQueryParam,
+  getFirstAllowedRedirectAndWarn,
   hasExternalAccountSignUpError,
   ignoreEventValue,
   inActiveBrowserTab,
@@ -162,6 +164,15 @@ export default class Clerk implements ClerkInterface {
       return handleValueOrFn(this.#options.isSatellite, new URL(window.location.href), false);
     }
     return false;
+  }
+
+  get allowedRedirectOrigins(): string[] {
+    const origins = [...(this.#options.allowedRedirectOrigins || [])];
+    if (inBrowser()) {
+      //TODO: also push http(s)://*.etld+1
+      origins.push(window.location.origin);
+    }
+    return origins;
   }
 
   get domain(): string {
@@ -588,9 +599,20 @@ export default class Clerk implements ClerkInterface {
     return unsubscribe;
   };
 
-  public navigate = async (to: string | undefined): Promise<unknown> => {
+  public navigate: CustomNavigation = async (to, navigateOptions): Promise<unknown> => {
     if (!to || !inBrowser()) {
       return;
+    }
+
+    if (navigateOptions?.secure) {
+      const newTo = getFirstAllowedRedirectAndWarn(
+        [to, ...(navigateOptions.fallbackUrls || [])],
+        this.allowedRedirectOrigins,
+      );
+      if (!newTo) {
+        return;
+      }
+      to = newTo;
     }
 
     const toURL = new URL(to, window.location.href);

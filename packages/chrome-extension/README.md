@@ -60,7 +60,7 @@ function HelloUser() {
 const publishableKey = process.env.REACT_APP_CLERK_PUBLISHABLE_KEY || '';
 
 function ClerkProviderWithRoutes() {
-  const navigate = useNavigate();
+  const { navigate } = useRouter();
 
   return (
     <ClerkProvider

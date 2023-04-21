@@ -24,9 +24,9 @@ export default class Portal<CtxType extends AvailableComponentCtx> extends React
       </ComponentContext.Provider>
     );
 
-    if (componentName === 'UserButton') {
-      return ReactDOM.createPortal(el, node);
-    }
+    // if (componentName === 'UserButton') {
+    //   return ReactDOM.createPortal(el, node);
+    // }
 
     if (props?.routing === 'path') {
       if (!props?.path) {
