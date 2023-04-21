@@ -20,7 +20,6 @@ import {
   useLocalizations,
 } from '../customizables';
 import { useDelayUnmount, usePrefersReducedMotion } from '../hooks';
-import { CheckCircle, ExclamationCircle } from '../icons';
 import type { PropsOfComponent, ThemableCssProp } from '../styledSystem';
 import { animations } from '../styledSystem';
 import { useCardState } from './contexts';
@@ -277,72 +276,42 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
       {isSomeMessageVisible && (
         <Box
           style={{
-            height,
+            height, // dynamic height
             position: 'relative',
           }}
           sx={getFormTextAnimation(
             !!debouncedState?.isFocused || !!debouncedState?.isSuccessful || !!debouncedState?.errorText,
           )}
         >
-          {directionMessage && !successMessage && (
+          {/* Display the directions after is success message is unmounted*/}
+          {!successMessage && directionMessage && (
             <FormText
-              variant='smallRegular'
-              colorScheme='neutral'
-              style={{
-                position: 'absolute',
-                top: '0px',
-              }}
               ref={calculateHeight}
               sx={getFormTextAnimation(!!debouncedState?.isFocused && !debouncedState?.isSuccessful)}
             >
               {directionMessage}
             </FormText>
           )}
+
+          {/* Display the error message after the directions is unmounted*/}
           {!directionMessage && errorMessage && (
             <FormErrorText
               elementDescriptor={descriptors.formFieldErrorText}
               elementId={descriptors.formFieldErrorText.setId(id)}
-              style={{
-                position: 'absolute',
-                top: '0px',
-              }}
               sx={getFormTextAnimation(!!debouncedState?.errorText)}
             >
-              <Flex
-                direction={'row'}
-                align={'center'}
-                gap={2}
-              >
-                <Icon
-                  colorScheme={'danger'}
-                  icon={ExclamationCircle}
-                />
-                {errorMessage}
-              </Flex>
+              {errorMessage}
             </FormErrorText>
           )}
+
+          {/* Display the success message after the error message is unmounted*/}
           {!errorMessage && successMessage && (
             <FormSuccessText
               elementDescriptor={descriptors.formFieldErrorText}
               elementId={descriptors.formFieldErrorText.setId(id)}
-              colorScheme={'neutral'}
-              style={{
-                position: 'absolute',
-                top: '0px',
-              }}
               sx={getFormTextAnimation(!!debouncedState?.isSuccessful)}
             >
-              <Flex
-                direction={'row'}
-                align={'center'}
-                gap={2}
-              >
-                <Icon
-                  colorScheme={'success'}
-                  icon={CheckCircle}
-                />
-                {successMessage}
-              </Flex>
+              {successMessage}
             </FormSuccessText>
           )}
         </Box>
