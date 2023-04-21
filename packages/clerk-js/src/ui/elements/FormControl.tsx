@@ -19,7 +19,7 @@ import {
   Text,
   useLocalizations,
 } from '../customizables';
-import { usePrefersReducedMotion } from '../hooks';
+import { useDelayUnmount, usePrefersReducedMotion } from '../hooks';
 import { CheckCircle, ExclamationCircle } from '../icons';
 import type { PropsOfComponent, ThemableCssProp } from '../styledSystem';
 import { animations } from '../styledSystem';
@@ -66,21 +66,6 @@ const getInputElementForType = (type: FormControlProps['type']) => {
   const customInput = type as keyof typeof CustomInputs;
   return CustomInputs[customInput] || Input;
 };
-
-function useDelayUnmount(isMounted: string, delayTime: number) {
-  const [shouldRender, setShouldRender] = React.useState('');
-
-  React.useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout>;
-    if (isMounted && !shouldRender) {
-      timeoutId = setTimeout(() => setShouldRender(isMounted), delayTime);
-    } else if (!isMounted && shouldRender) {
-      timeoutId = setTimeout(() => setShouldRender(''), delayTime);
-    }
-    return () => clearTimeout(timeoutId);
-  }, [isMounted, delayTime, shouldRender]);
-  return shouldRender;
-}
 
 function useFormTextAnimation() {
   const prefersReducedMotion = usePrefersReducedMotion();
