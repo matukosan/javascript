@@ -91,6 +91,34 @@ function useFormTextAnimation() {
   };
 }
 
+const useCalculateErrorTextHeight = (messageToDisplay: string | undefined) => {
+  const [height, setHeight] = useState(24);
+
+  const calculateHeight = useCallback(
+    (element: HTMLElement | null) => {
+      if (element) {
+        const fontSize = parseInt(getComputedStyle(element).fontSize.replace('px', ''));
+        const width = parseInt(getComputedStyle(element).width.replace('px', ''));
+        const lineHeight = parseInt(getComputedStyle(element).lineHeight.replace('px', '')) / 16;
+        const characters = messageToDisplay?.length || 0;
+
+        setHeight(prevHeight => {
+          const newHeight = 10 + fontSize * lineHeight * Math.ceil(characters / (width / (fontSize * 0.6))); //0.6 is an average character width
+          if (prevHeight < newHeight) {
+            return newHeight;
+          }
+          return prevHeight;
+        });
+      }
+    },
+    [messageToDisplay],
+  );
+  return {
+    height,
+    calculateHeight,
+  };
+};
+
 export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props, ref) => {
   const { t } = useLocalizations();
   const card = useCardState();
@@ -127,26 +155,10 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
   const successMessage = useDelayUnmount(_successMessage || '', 500);
   const directionMessage = useDelayUnmount(debouncedState?.isFocused ? direction || '' : '', 500);
 
-  const isSomeMessageVisible = directionMessage || successMessage || errorMessage;
+  const messageToDisplay = directionMessage || successMessage || errorMessage;
+  const isSomeMessageVisible = !!messageToDisplay;
 
-  const [height, setHeight] = useState(24);
-
-  const calculateHeight = useCallback((element: HTMLElement | null) => {
-    if (element) {
-      const fontSize = parseInt(getComputedStyle(element).fontSize.replace('px', ''));
-      const width = parseInt(getComputedStyle(element).width.replace('px', ''));
-      const lineHeight = parseInt(getComputedStyle(element).lineHeight.replace('px', '')) / 16;
-      const characters = direction?.length || 0;
-
-      setHeight(prevHeight => {
-        const newHeight = 10 + fontSize * lineHeight * Math.ceil(characters / (width / (fontSize * 0.6))); //0.6 is an average character width
-        if (prevHeight < newHeight) {
-          return newHeight;
-        }
-        return prevHeight;
-      });
-    }
-  }, []);
+  const { calculateHeight, height } = useCalculateErrorTextHeight(messageToDisplay);
 
   const { getFormTextAnimation } = useFormTextAnimation();
 
