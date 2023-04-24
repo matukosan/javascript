@@ -161,9 +161,9 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
     submittedWithEnter,
   );
 
-  const errorMessage = useDelayUnmount(debouncedState?.errorText || '', 500);
-  const _successMessage = debouncedState?.isSuccessful ? 'Nice work. Your password is good' : '';
-  const successMessage = useDelayUnmount(_successMessage || '', 500);
+  const errorMessage = useDelayUnmount(debouncedState.errorText, 500);
+  const _successMessage = debouncedState.isSuccessful ? 'Nice work. Your password is good' : '';
+  const successMessage = useDelayUnmount(_successMessage, 500);
   const directionMessage = useDelayUnmount(debouncedState.direction, 500);
   const warningMessage = useDelayUnmount(debouncedState.warningText, 500);
 
@@ -312,9 +312,9 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
             position: 'relative',
           }}
           sx={getFormTextAnimation(
-            !!debouncedState?.isFocused ||
-              !!debouncedState?.isSuccessful ||
-              !!debouncedState?.errorText ||
+            !!debouncedState.direction ||
+              debouncedState.isSuccessful ||
+              !!debouncedState.errorText ||
               !!debouncedState.warningText,
           )}
         >
@@ -323,7 +323,7 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
             <FormText
               ref={calculateHeight}
               sx={getFormTextAnimation(
-                !!debouncedState?.isFocused && !debouncedState?.isSuccessful && !debouncedState.warningText,
+                debouncedState.isFocused && !debouncedState?.isSuccessful && !debouncedState.warningText,
               )}
             >
               {directionMessage}
