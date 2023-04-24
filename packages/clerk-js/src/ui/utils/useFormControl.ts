@@ -42,12 +42,6 @@ type FieldStateProps<Id> = {
   setSuccessful: (isSuccess: boolean) => void;
   isSuccessful: boolean;
   isFocused: boolean;
-  debouncedState: {
-    errorText: string | undefined;
-    isSuccessful: boolean;
-    isFocused: boolean;
-    direction: string | undefined;
-  };
 } & Options;
 
 export type FormControlState<Id = string> = FieldStateProps<Id> & {
@@ -80,18 +74,6 @@ export const useFormControl = <Id extends string>(
   const [isSuccessful, setIsSuccessful] = React.useState(false);
   const [hasLostFocus, setHasLostFocus] = React.useState(false);
   const [isFocused, setFocused] = React.useState(false);
-
-  // Not wrapping this in useMemo causes infinite re-renders
-  const feedbackMemo = useMemo(() => {
-    return {
-      errorText: opts?.enableErrorAfterBlur ? (hasLostFocus ? errorText : '') : errorText,
-      isSuccessful: opts?.enableErrorAfterBlur ? hasLostFocus && isSuccessful : isSuccessful,
-      isFocused,
-      direction: isFocused ? opts?.direction : '',
-    };
-  }, [opts.direction, opts.enableErrorAfterBlur, isFocused, isSuccessful, hasLostFocus, errorText]);
-
-  const debouncedState = useDebounce(feedbackMemo, 300);
 
   const onChange: FormControlState['onChange'] = event => {
     if (opts?.type === 'checkbox') {
@@ -142,7 +124,6 @@ export const useFormControl = <Id extends string>(
     onFocus,
     isFocused,
     enableErrorAfterBlur: opts.enableErrorAfterBlur || false,
-    debouncedState,
     ...opts,
   };
 
@@ -157,4 +138,70 @@ export const buildRequest = (fieldStates: Array<FormControlStateLike>): Record<s
     request[x.id] = x.value;
   });
   return request;
+};
+
+type DebouncedFeedback = {
+  debounced: {
+    errorText: string;
+    isSuccessful: boolean;
+    isFocused: boolean;
+    direction: string;
+  };
+};
+
+type DebouncingOption = {
+  hasLostFocus: boolean;
+  errorText: string | undefined;
+  enableErrorAfterBlur: boolean | undefined;
+  isSuccessful: boolean;
+  isFocused: boolean;
+  direction: string | undefined;
+};
+export const useFormControlFeedback = (
+  opts: DebouncingOption,
+  skipBlur = false,
+  delayTime = 300,
+): DebouncedFeedback => {
+  const {
+    hasLostFocus = false,
+    errorText = '',
+    enableErrorAfterBlur = false,
+    isSuccessful = false,
+    isFocused = false,
+    direction = '',
+  } = opts;
+
+  const canDisplayFeedback = useMemo(() => {
+    if (enableErrorAfterBlur) {
+      if (skipBlur) {
+        return true;
+      }
+      return hasLostFocus;
+    }
+    return true;
+  }, [enableErrorAfterBlur, hasLostFocus, skipBlur]);
+
+  const feedbackMemo = useMemo(() => {
+    const _errorText = canDisplayFeedback ? errorText : '';
+    const _isSuccessful = canDisplayFeedback && isSuccessful;
+
+    /*
+     * On keyboard navigation avoid displaying the direction when an error is present.
+     * This is necessary in order to ensure that users will still be able to see the error message
+     *  even if they have pressed Enter (to submit form) and field still has focus.
+     */
+    const directionBehaviour = skipBlur ? isFocused && !_isSuccessful && !_errorText : isFocused && !_isSuccessful;
+    return {
+      errorText: _errorText,
+      isSuccessful: _isSuccessful,
+      isFocused,
+      direction: directionBehaviour ? direction : '',
+    };
+  }, [direction, enableErrorAfterBlur, isFocused, isSuccessful, hasLostFocus, errorText, canDisplayFeedback, skipBlur]);
+
+  const debouncedState = useDebounce(feedbackMemo, delayTime);
+
+  return {
+    debounced: debouncedState,
+  };
 };

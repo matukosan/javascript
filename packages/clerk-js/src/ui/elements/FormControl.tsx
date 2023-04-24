@@ -1,6 +1,6 @@
 import type { FieldId } from '@clerk/types';
 import type { ClerkAPIError } from '@clerk/types';
-import React, { forwardRef, useCallback, useState, useMemo } from 'react';
+import React, { forwardRef, useCallback, useState } from 'react';
 
 import type { LocalizationKey } from '../customizables';
 import {
@@ -22,6 +22,7 @@ import {
 import { useDelayUnmount, usePrefersReducedMotion } from '../hooks';
 import type { PropsOfComponent, ThemableCssProp } from '../styledSystem';
 import { animations } from '../styledSystem';
+import { useFormControlFeedback } from '../utils';
 import { useCardState } from './contexts';
 import { useFormState } from './Form';
 import { PasswordInput } from './PasswordInput';
@@ -45,12 +46,6 @@ type FormControlProps = Omit<PropsOfComponent<typeof Input>, 'label' | 'placehol
   enableErrorAfterBlur?: boolean;
   direction?: string;
   isFocused: boolean;
-  debouncedState?: {
-    errorText: string | undefined;
-    isSuccessful: boolean;
-    isFocused: boolean;
-    direction: string | undefined;
-  };
 };
 
 // TODO: Convert this into a Component?
@@ -140,7 +135,6 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
     enableErrorAfterBlur,
     direction,
     isFocused: _isFocused,
-    debouncedState,
     ...rest
   } = props;
   const hasError = !!errorText && hasLostFocus;
@@ -149,10 +143,22 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
   const InputElement = getInputElementForType(props.type);
   const isCheckbox = props.type === 'checkbox';
 
+  const { debounced: debouncedState } = useFormControlFeedback(
+    {
+      errorText,
+      direction,
+      enableErrorAfterBlur,
+      isFocused: _isFocused,
+      hasLostFocus,
+      isSuccessful,
+    },
+    submittedWithEnter,
+  );
+
   const errorMessage = useDelayUnmount(debouncedState?.errorText || '', 500);
   const _successMessage = debouncedState?.isSuccessful ? 'Nice work. Your password is good' : '';
   const successMessage = useDelayUnmount(_successMessage || '', 500);
-  const directionMessage = useDelayUnmount(debouncedState?.isFocused ? direction || '' : '', 500);
+  const directionMessage = useDelayUnmount(debouncedState.direction, 500);
 
   const messageToDisplay = directionMessage || successMessage || errorMessage;
   const isSomeMessageVisible = !!messageToDisplay;
@@ -160,16 +166,6 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
   const { calculateHeight, height } = useCalculateErrorTextHeight(messageToDisplay);
 
   const { getFormTextAnimation } = useFormTextAnimation();
-
-  const shouldDisplayError = useMemo(() => {
-    if (enableErrorAfterBlur) {
-      if (submittedWithEnter) {
-        return true;
-      }
-      return hasLostFocus;
-    }
-    return true;
-  }, [enableErrorAfterBlur, hasLostFocus, submittedWithEnter]);
 
   const ActionLabel = actionLabel ? (
     <Link
