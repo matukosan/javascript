@@ -12,6 +12,7 @@ import {
   FormLabel,
   FormSuccessText,
   FormText,
+  FormWarningText,
   Icon as IconCustomizable,
   Input,
   Link,
@@ -40,6 +41,8 @@ type FormControlProps = Omit<PropsOfComponent<typeof Input>, 'label' | 'placehol
   actionLabel?: string | LocalizationKey;
   icon?: React.ComponentType;
   setError: (error: string | ClerkAPIError | undefined) => void;
+  warningText: string | undefined;
+  setWarning: (error: string | undefined) => void;
   setSuccessful: (isSuccess: boolean) => void;
   isSuccessful: boolean;
   hasLostFocus: boolean;
@@ -135,6 +138,8 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
     enableErrorAfterBlur,
     direction,
     isFocused: _isFocused,
+    warningText,
+    setWarning,
     ...rest
   } = props;
   const hasError = !!errorText && hasLostFocus;
@@ -151,6 +156,7 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
       isFocused: _isFocused,
       hasLostFocus,
       isSuccessful,
+      warningText,
     },
     submittedWithEnter,
   );
@@ -159,8 +165,9 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
   const _successMessage = debouncedState?.isSuccessful ? 'Nice work. Your password is good' : '';
   const successMessage = useDelayUnmount(_successMessage || '', 500);
   const directionMessage = useDelayUnmount(debouncedState.direction, 500);
+  const warningMessage = useDelayUnmount(debouncedState.warningText, 500);
 
-  const messageToDisplay = directionMessage || successMessage || errorMessage;
+  const messageToDisplay = directionMessage || successMessage || errorMessage || warningMessage;
   const isSomeMessageVisible = !!messageToDisplay;
 
   const { calculateHeight, height } = useCalculateErrorTextHeight(messageToDisplay);
@@ -255,6 +262,7 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
       setError={setError}
       isSuccessful={enableErrorAfterBlur ? hasLostFocus && isSuccessful : isSuccessful}
       setSuccessful={setSuccessful}
+      setWarning={setWarning}
       sx={sx}
     >
       {isCheckbox ? (
@@ -304,19 +312,23 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
             position: 'relative',
           }}
           sx={getFormTextAnimation(
-            !!debouncedState?.isFocused || !!debouncedState?.isSuccessful || !!debouncedState?.errorText,
+            !!debouncedState?.isFocused ||
+              !!debouncedState?.isSuccessful ||
+              !!debouncedState?.errorText ||
+              !!debouncedState.warningText,
           )}
         >
-          {/* Display the directions after is success message is unmounted*/}
-          {!successMessage && directionMessage && (
+          {/*Display the directions after is success message is unmounted*/}
+          {!successMessage && !warningMessage && directionMessage && (
             <FormText
               ref={calculateHeight}
-              sx={getFormTextAnimation(!!debouncedState?.isFocused && !debouncedState?.isSuccessful)}
+              sx={getFormTextAnimation(
+                !!debouncedState?.isFocused && !debouncedState?.isSuccessful && !debouncedState.warningText,
+              )}
             >
               {directionMessage}
             </FormText>
           )}
-
           {/* Display the error message after the directions is unmounted*/}
           {!directionMessage && errorMessage && (
             <FormErrorText
@@ -331,12 +343,23 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
           {/* Display the success message after the error message is unmounted*/}
           {!errorMessage && successMessage && (
             <FormSuccessText
+              // TODO: Update texts here
               elementDescriptor={descriptors.formFieldErrorText}
               elementId={descriptors.formFieldErrorText.setId(id)}
               sx={getFormTextAnimation(!!debouncedState?.isSuccessful)}
             >
               {successMessage}
             </FormSuccessText>
+          )}
+
+          {warningMessage && (
+            <FormWarningText
+              elementDescriptor={descriptors.formFieldErrorText}
+              elementId={descriptors.formFieldErrorText.setId(id)}
+              sx={getFormTextAnimation(!!debouncedState.warningText)}
+            >
+              {warningMessage}
+            </FormWarningText>
           )}
         </Box>
       )}

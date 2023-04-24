@@ -38,7 +38,9 @@ type FieldStateProps<Id> = {
   onFocus: React.FocusEventHandler<HTMLInputElement>;
   hasLostFocus: boolean;
   errorText: string | undefined;
+  warningText: string | undefined;
   setError: (error: string | ClerkAPIError | undefined) => void;
+  setWarning: (error: string | undefined) => void;
   setSuccessful: (isSuccess: boolean) => void;
   isSuccessful: boolean;
   isFocused: boolean;
@@ -71,6 +73,7 @@ export const useFormControl = <Id extends string>(
   const [value, setValueInternal] = React.useState<string>(initialState);
   const [checked, setCheckedInternal] = React.useState<boolean>(opts?.checked || false);
   const [errorText, setErrorText] = React.useState<string | undefined>(undefined);
+  const [warningText, setWarningText] = React.useState<string | undefined>(undefined);
   const [isSuccessful, setIsSuccessful] = React.useState(false);
   const [hasLostFocus, setHasLostFocus] = React.useState(false);
   const [isFocused, setFocused] = React.useState(false);
@@ -97,11 +100,21 @@ export const useFormControl = <Id extends string>(
     setErrorText(translateError(error || undefined));
     if (typeof error !== 'undefined') {
       setIsSuccessful(false);
+      setWarningText(undefined);
     }
   };
   const setSuccessful: FormControlState['setSuccessful'] = isSuccess => {
     setErrorText(undefined);
+    setWarningText(undefined);
     setIsSuccessful(isSuccess);
+  };
+
+  const setWarning: FormControlState['setWarning'] = warning => {
+    setWarningText(warning || undefined);
+    if (typeof warning !== 'undefined') {
+      setIsSuccessful(false);
+      setErrorText(undefined);
+    }
   };
 
   if (opts.type === 'password') {
@@ -124,6 +137,8 @@ export const useFormControl = <Id extends string>(
     onFocus,
     isFocused,
     enableErrorAfterBlur: opts.enableErrorAfterBlur || false,
+    setWarning,
+    warningText,
     ...opts,
   };
 
@@ -143,6 +158,7 @@ export const buildRequest = (fieldStates: Array<FormControlStateLike>): Record<s
 type DebouncedFeedback = {
   debounced: {
     errorText: string;
+    warningText: string;
     isSuccessful: boolean;
     isFocused: boolean;
     direction: string;
@@ -151,6 +167,7 @@ type DebouncedFeedback = {
 
 type DebouncingOption = {
   hasLostFocus: boolean;
+  warningText: string | undefined;
   errorText: string | undefined;
   enableErrorAfterBlur: boolean | undefined;
   isSuccessful: boolean;
@@ -165,6 +182,7 @@ export const useFormControlFeedback = (
   const {
     hasLostFocus = false,
     errorText = '',
+    warningText = '',
     enableErrorAfterBlur = false,
     isSuccessful = false,
     isFocused = false,
@@ -183,6 +201,7 @@ export const useFormControlFeedback = (
 
   const feedbackMemo = useMemo(() => {
     const _errorText = canDisplayFeedback ? errorText : '';
+    const _warningText = canDisplayFeedback ? warningText : '';
     const _isSuccessful = canDisplayFeedback && isSuccessful;
 
     /*
@@ -194,6 +213,7 @@ export const useFormControlFeedback = (
     return {
       errorText: _errorText,
       isSuccessful: _isSuccessful,
+      warningText: _warningText,
       isFocused,
       direction: directionBehaviour ? direction : '',
     };
