@@ -343,9 +343,8 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
           {/* Display the success message after the error message is unmounted*/}
           {!errorMessage && successMessage && (
             <FormSuccessText
-              // TODO: Update texts here
-              elementDescriptor={descriptors.formFieldErrorText}
-              elementId={descriptors.formFieldErrorText.setId(id)}
+              elementDescriptor={descriptors.formFieldSuccessText}
+              elementId={descriptors.formFieldSuccessText.setId(id)}
               sx={getFormTextAnimation(!!debouncedState?.isSuccessful)}
             >
               {successMessage}
@@ -354,8 +353,8 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
 
           {warningMessage && (
             <FormWarningText
-              elementDescriptor={descriptors.formFieldErrorText}
-              elementId={descriptors.formFieldErrorText.setId(id)}
+              elementDescriptor={descriptors.formFieldWarningText}
+              elementId={descriptors.formFieldWarningText.setId(id)}
               sx={getFormTextAnimation(!!debouncedState.warningText)}
             >
               {warningMessage}
