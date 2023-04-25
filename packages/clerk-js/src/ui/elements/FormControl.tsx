@@ -320,7 +320,7 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
           )}
         >
           {/*Display the directions after is success message is unmounted*/}
-          {!successMessage && !warningMessage && directionMessage && (
+          {!successMessage && !warningMessage && !errorMessage && directionMessage && (
             <FormText
               ref={calculateHeight}
               sx={getFormTextAnimation(
@@ -331,7 +331,7 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
             </FormText>
           )}
           {/* Display the error message after the directions is unmounted*/}
-          {!directionMessage && errorMessage && (
+          {errorMessage && (
             <FormErrorText
               elementDescriptor={descriptors.formFieldErrorText}
               elementId={descriptors.formFieldErrorText.setId(id)}
