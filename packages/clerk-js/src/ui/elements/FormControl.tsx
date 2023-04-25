@@ -75,7 +75,7 @@ function useFormTextAnimation() {
         };
       }
       return t => ({
-        animation: `${enterAnimation ? animations.inAnimation : animations.outAnimation} 600ms ${
+        animation: `${enterAnimation ? animations.inAnimation : animations.outAnimation} 300ms ${
           t.transitionTiming.$common
         }`,
       });
@@ -158,13 +158,13 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
     submittedWithEnter,
   );
 
-  const errorMessage = useDelayUnmount(debouncedState.errorText, 500);
+  const errorMessage = useDelayUnmount(debouncedState.errorText, 200);
   const _successMessage = debouncedState.isSuccessful
     ? t(localizationKeys('unstable__errors.zxcvbn.goodPassword'))
     : '';
-  const successMessage = useDelayUnmount(_successMessage, 500);
-  const directionMessage = useDelayUnmount(debouncedState.direction, 500);
-  const warningMessage = useDelayUnmount(debouncedState.warningText, 500);
+  const successMessage = useDelayUnmount(_successMessage, 200);
+  const directionMessage = useDelayUnmount(debouncedState.direction, 200);
+  const warningMessage = useDelayUnmount(debouncedState.warningText, 200);
 
   const messageToDisplay = directionMessage || successMessage || errorMessage || warningMessage;
   const isSomeMessageVisible = !!messageToDisplay;
