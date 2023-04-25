@@ -603,6 +603,7 @@ type UnstableErrors = WithParamName<{
   zxcvbn: {
     notEnough: LocalizationValue;
     couldBeStronger: LocalizationValue;
+    goodPassword: LocalizationValue;
     warnings: {
       straightRow: LocalizationValue;
       keyPattern: LocalizationValue;

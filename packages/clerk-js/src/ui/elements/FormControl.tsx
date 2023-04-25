@@ -162,7 +162,9 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
   );
 
   const errorMessage = useDelayUnmount(debouncedState.errorText, 500);
-  const _successMessage = debouncedState.isSuccessful ? 'Nice work. Your password is good' : '';
+  const _successMessage = debouncedState.isSuccessful
+    ? t(localizationKeys('unstable__errors.zxcvbn.goodPassword'))
+    : '';
   const successMessage = useDelayUnmount(_successMessage, 500);
   const directionMessage = useDelayUnmount(debouncedState.direction, 500);
   const warningMessage = useDelayUnmount(debouncedState.warningText, 500);
