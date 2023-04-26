@@ -25,7 +25,8 @@ import type {
   Web3SignatureConfig,
   Web3SignatureFactor,
 } from '@clerk/types';
-import type { AuthenticateWithWeb3Params } from '@clerk/types/src';
+import type { AuthenticateWithWeb3Params, StartSamlFlowParams } from '@clerk/types/src';
+import type { SamlConfig } from '@clerk/types/src';
 
 import { generateSignatureWithMetamask, getMetamaskIdentifier, windowNavigate } from '../../utils';
 import {
@@ -101,6 +102,12 @@ export class SignIn extends BaseResource implements SignInResource {
           } as ResetPasswordCodeFactorConfig;
         }
         break;
+      case 'saml':
+        config = {
+          redirectUrl: factor.redirectUrl,
+          actionCompleteRedirectUrl: factor.actionCompleteRedirectUrl,
+        } as SamlConfig;
+        break;
       default:
         clerkInvalidStrategy('SignIn.prepareFirstFactor', factor.strategy);
     }
@@ -172,6 +179,23 @@ export class SignIn extends BaseResource implements SignInResource {
     const { firstFactorVerification } = await this.create({
       strategy,
       identifier,
+      redirectUrl: SignIn.clerk.buildUrlWithAuth(redirectUrl),
+      actionCompleteRedirectUrl: redirectUrlComplete,
+    });
+    const { status, externalVerificationRedirectURL } = firstFactorVerification;
+
+    if (status === 'unverified' && externalVerificationRedirectURL) {
+      windowNavigate(externalVerificationRedirectURL);
+    } else {
+      clerkInvalidFAPIResponse(status, SignIn.fapiClient.buildEmailAddress('support'));
+    }
+  };
+
+  public startSamlFlow = async (params: StartSamlFlowParams): Promise<void> => {
+    const { redirectUrl, redirectUrlComplete } = params || {};
+
+    const { firstFactorVerification } = await this.prepareFirstFactor({
+      strategy: 'saml',
       redirectUrl: SignIn.clerk.buildUrlWithAuth(redirectUrl),
       actionCompleteRedirectUrl: redirectUrlComplete,
     });

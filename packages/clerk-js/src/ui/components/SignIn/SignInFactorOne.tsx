@@ -1,11 +1,12 @@
 import type { SignInFactor } from '@clerk/types';
 import React from 'react';
 
-import { withRedirectToHomeSingleSessionGuard } from '../../common';
-import { useCoreSignIn, useEnvironment } from '../../contexts';
+import { buildSSOCallbackURL, withRedirectToHomeSingleSessionGuard } from '../../common';
+import { useCoreSignIn, useEnvironment, useSignInContext } from '../../contexts';
 import { ErrorCard, LoadingCard, withCardStateProvider } from '../../elements';
 import { localizationKeys } from '../../localization';
 import { useRouter } from '../../router';
+import { handleError } from '../../utils';
 import { AlternativeMethods } from './AlternativeMethods';
 import { SignInFactorOneEmailCodeCard } from './SignInFactorOneEmailCodeCard';
 import { SignInFactorOneEmailLinkCard } from './SignInFactorOneEmailLinkCard';
@@ -41,7 +42,26 @@ export function _SignInFactorOne(): JSX.Element {
     () => !currentFactor || !factorHasLocalStrategy(currentFactor),
   );
 
+  const ctx = useSignInContext();
+  const { displayConfig } = useEnvironment();
+
   React.useEffect(() => {
+    // Check if we need to initiate a saml flow
+    if (currentFactor?.strategy == 'saml') {
+      const startSamlFlow = async () => {
+        const redirectUrl = buildSSOCallbackURL(ctx, displayConfig.signInUrl);
+        const redirectUrlComplete = ctx.afterSignInUrl || displayConfig.afterSignInUrl;
+
+        // TODO handle error case
+        await signIn
+          .startSamlFlow({ redirectUrl, redirectUrlComplete })
+          // eslint-disable-next-line @typescript-eslint/no-empty-function
+          .catch(err => handleError(err, [], () => {}));
+      };
+
+      void startSamlFlow();
+    }
+
     // Handle the case where a user lands on alternative methods screen,
     // clicks a social button but then navigates back to sign in.
     // SignIn status resets to 'needs_identifier'

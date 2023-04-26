@@ -38,6 +38,7 @@ import type {
 } from './json';
 import type { AuthenticateWithRedirectParams } from './redirects';
 import type { ClerkResource } from './resource';
+import type { StartSamlFlowParams } from './saml';
 import type {
   BackupCodeStrategy,
   EmailCodeStrategy,
@@ -83,6 +84,8 @@ export interface SignInResource extends ClerkResource {
   authenticateWithMetamask: () => Promise<SignInResource>;
 
   createMagicLinkFlow: () => CreateMagicLinkFlowReturn<SignInStartMagicLinkFlowParams, SignInResource>;
+
+  startSamlFlow: (params: StartSamlFlowParams) => Promise<void>;
 }
 
 export type SignInStatus =

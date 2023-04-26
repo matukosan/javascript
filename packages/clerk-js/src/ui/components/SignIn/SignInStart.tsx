@@ -153,6 +153,7 @@ export function _SignInStart(): JSX.Element {
         void (await signIn.create({}));
       }
     }
+
     void handleOauthError();
   }, []);
 
@@ -171,6 +172,12 @@ export function _SignInStart(): JSX.Element {
     try {
       const res = await signIn.create(buildSignInParams(fields));
       switch (res.status) {
+        case 'needs_identifier': // TODO probably need a dedicated status
+          // Check if we need to initiate a saml flow
+          if (res.supportedFirstFactors.some(ff => ff.strategy === 'saml')) {
+            return navigate('factor-one');
+          }
+          break;
         case 'needs_first_factor':
           return navigate('factor-one');
         case 'needs_second_factor':
