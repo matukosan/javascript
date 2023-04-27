@@ -1,7 +1,8 @@
+import { testGlob } from '@clerk/shared';
 import { camelToSnake, createDevOrStagingUrlCache, isIPV4Address } from '@clerk/shared';
 import type { SignUpResource } from '@clerk/types';
 
-import { glob, loadScript } from '../utils';
+import { loadScript } from '../utils';
 import { joinPaths } from './path';
 import { getQueryParams } from './querystring';
 
@@ -371,7 +372,7 @@ const isAllowedRedirect = (_url: string, allowedRedirectOrigins: string[]) => {
     return true;
   }
 
-  return allowedRedirectOrigins.some(allowedOrigin => glob(allowedOrigin, url.href));
+  return allowedRedirectOrigins.some(allowedOrigin => testGlob(allowedOrigin, url.href));
 };
 
 export const getFirstAllowedRedirectAndWarn = (urls: string[], allowedRedirectOrigins: string[]) => {

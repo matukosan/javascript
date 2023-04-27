@@ -37,7 +37,7 @@ export const extractAuthProp = (
   const snakeCaseField = camelToSnake(key);
   const queryParamValue = queryParams[snakeCaseField];
   const primaryQueryParamRedirectUrl = typeof queryParamValue === 'string' ? queryParamValue : null;
-  const secondaryQueryParamRedirectUrl = typeof queryParamValue === 'string' ? queryParamValue : null;
+  const secondaryQueryParamRedirectUrl = typeof queryParams.redirect_url === 'string' ? queryParams.redirect_url : null;
 
   let queryParamUrl: string | null | undefined = primaryQueryParamRedirectUrl || secondaryQueryParamRedirectUrl;
 

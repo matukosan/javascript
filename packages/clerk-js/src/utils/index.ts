@@ -27,4 +27,3 @@ export * from './windowNavigate';
 export * from './componentGuards';
 export * from './queryStateParams';
 export * from './decodeBase16';
-export * from './glob';
