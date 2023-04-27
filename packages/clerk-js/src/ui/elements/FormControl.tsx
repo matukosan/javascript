@@ -9,9 +9,9 @@ import {
   Flex,
   FormControl as FormControlPrim,
   FormErrorText,
+  FormInfoText,
   FormLabel,
   FormSuccessText,
-  FormText,
   FormWarningText,
   Icon as IconCustomizable,
   Input,
@@ -42,7 +42,7 @@ type FormControlProps = Omit<PropsOfComponent<typeof Input>, 'label' | 'placehol
   icon?: React.ComponentType;
   setError: (error: string | ClerkAPIError | undefined) => void;
   warningText: string | undefined;
-  setWarning: (error: string | undefined) => void;
+  setWarning: (error: string) => void;
   setSuccessful: (isSuccess: boolean) => void;
   isSuccessful: boolean;
   hasLostFocus: boolean;
@@ -320,14 +320,14 @@ export const FormControl = forwardRef<HTMLInputElement, FormControlProps>((props
         >
           {/*Display the directions after is success message is unmounted*/}
           {!successMessage && !warningMessage && !errorMessage && directionMessage && (
-            <FormText
+            <FormInfoText
               ref={e => calculateHeight(e, directionMessage)}
               sx={getFormTextAnimation(
                 debouncedState.isFocused && !debouncedState?.isSuccessful && !debouncedState.warningText,
               )}
             >
               {directionMessage}
-            </FormText>
+            </FormInfoText>
           )}
           {/* Display the error message after the directions is unmounted*/}
           {errorMessage && (
