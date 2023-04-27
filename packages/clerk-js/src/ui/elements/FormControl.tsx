@@ -75,10 +75,10 @@ function useFormTextAnimation() {
         };
       }
       return t => ({
-        animation: `${enterAnimation ? animations.inAnimation : animations.outAnimation} 300ms ${
-          t.transitionTiming.$common
-        }`,
-        transition: 'height 200ms ease', // This is expensive but required for a smooth layout shift
+        animation: `${enterAnimation ? animations.inAnimation : animations.outAnimation} ${
+          t.transitionDuration.$slower
+        } ${t.transitionTiming.$common}`,
+        transition: `height ${t.transitionDuration.$slow}  ease`, // This is expensive but required for a smooth layout shift
       });
     },
     [prefersReducedMotion],
@@ -89,8 +89,9 @@ function useFormTextAnimation() {
   };
 }
 
+type Px = number;
 const useCalculateErrorTextHeight = () => {
-  const [height, setHeight] = useState(24);
+  const [height, setHeight] = useState<Px>(24);
 
   const calculateHeight = useCallback((element: HTMLElement | null, messageToDisplay: string | undefined) => {
     if (element) {
