@@ -598,7 +598,7 @@ export default class Clerk implements ClerkInterface {
     return unsubscribe;
   };
 
-  public navigate: CustomNavigation = async (to): Promise<unknown> => {
+  public navigate: CustomNavigation = async to => {
     if (!to || !inBrowser()) {
       return;
     }

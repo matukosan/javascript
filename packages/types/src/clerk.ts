@@ -75,6 +75,9 @@ export interface Clerk {
   /** Clerk Flag for satellite apps. */
   isSatellite: boolean;
 
+  /** Allowed Redirect Origins */
+  allowedRedirectOrigins: string[];
+
   instanceType?: InstanceType;
 
   /** Client handling most Clerk operations. */
