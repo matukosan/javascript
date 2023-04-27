@@ -11,7 +11,7 @@ type ExtractAuthUrlKey =
   | keyof Pick<SignInCtx, 'afterSignUpUrl' | 'afterSignInUrl'>;
 
 type ExtractAuthPropOptions =
-  | { queryParams: ParsedQs; displayConfig: DisplayConfigResource; allowedRedirectOrigins: string[] } & (
+  | { queryParams: ParsedQs; displayConfig: DisplayConfigResource; allowedRedirectOrigins?: string[] } & (
       | {
           ctx: Omit<SignUpCtx, 'componentName'>;
         }
@@ -36,14 +36,17 @@ export const extractAuthProp = (
 ): string => {
   const snakeCaseField = camelToSnake(key);
   const queryParamValue = queryParams[snakeCaseField];
+  const primaryQueryParamRedirectUrl = typeof queryParamValue === 'string' ? queryParamValue : null;
+  const secondaryQueryParamRedirectUrl = typeof queryParamValue === 'string' ? queryParamValue : null;
 
-  const queryParamUrl = getFirstAllowedRedirectAndWarn(
-    [
-      typeof queryParamValue === 'string' ? queryParamValue : null,
-      typeof queryParams.redirect_url === 'string' ? queryParams.redirect_url : null,
-    ].filter(i => i !== null) as string[],
-    allowedRedirectOrigins,
-  );
+  let queryParamUrl: string | null | undefined = primaryQueryParamRedirectUrl || secondaryQueryParamRedirectUrl;
+
+  if (allowedRedirectOrigins) {
+    queryParamUrl = getFirstAllowedRedirectAndWarn(
+      [primaryQueryParamRedirectUrl, secondaryQueryParamRedirectUrl].filter(i => i !== null) as string[],
+      allowedRedirectOrigins,
+    );
+  }
 
   const url = queryParamUrl || ctx[key] || ctx.redirectUrl || displayConfig[key];
 

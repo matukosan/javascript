@@ -76,7 +76,7 @@ export interface Clerk {
   isSatellite: boolean;
 
   /** Allowed Redirect Origins */
-  allowedRedirectOrigins: string[];
+  allowedRedirectOrigins: string[] | undefined;
 
   instanceType?: InstanceType;
 

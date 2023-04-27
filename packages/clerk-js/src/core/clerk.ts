@@ -165,7 +165,11 @@ export default class Clerk implements ClerkInterface {
     return false;
   }
 
-  get allowedRedirectOrigins(): string[] {
+  get allowedRedirectOrigins(): string[] | undefined {
+    if (!this.#options.allowedRedirectOrigins) {
+      return undefined;
+    }
+
     const origins = [...(this.#options.allowedRedirectOrigins || [])];
     if (inBrowser()) {
       //TODO: also push http(s)://*.etld+1
