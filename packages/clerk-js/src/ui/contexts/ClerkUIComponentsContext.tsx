@@ -44,6 +44,7 @@ export const useSignUpContext = (): SignUpContextType => {
       ctx,
       queryParams,
       displayConfig,
+      allowedRedirectOrigins: clerk.allowedRedirectOrigins,
     }),
   );
 
@@ -52,6 +53,7 @@ export const useSignUpContext = (): SignUpContextType => {
       ctx,
       queryParams,
       displayConfig,
+      allowedRedirectOrigins: clerk.allowedRedirectOrigins,
     }),
   );
 
@@ -110,6 +112,7 @@ export const useSignInContext = (): SignInContextType => {
       ctx,
       queryParams,
       displayConfig,
+      allowedRedirectOrigins: clerk.allowedRedirectOrigins,
     }),
   );
 
@@ -117,6 +120,7 @@ export const useSignInContext = (): SignInContextType => {
     ctx,
     queryParams,
     displayConfig,
+    allowedRedirectOrigins: clerk.allowedRedirectOrigins,
   });
 
   const buildUrlWithAuthParams: BuildUrlWithAuthParams = {};
@@ -124,7 +128,7 @@ export const useSignInContext = (): SignInContextType => {
     buildUrlWithAuthParams.useQueryParam = true;
 
     if (clerk.session) {
-      navigate(clerk.buildUrlWithAuth(extractedAfterSignInUrl, buildUrlWithAuthParams));
+      void navigate(clerk.buildUrlWithAuth(extractedAfterSignInUrl, buildUrlWithAuthParams));
     }
   }
 

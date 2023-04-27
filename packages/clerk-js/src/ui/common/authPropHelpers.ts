@@ -3,7 +3,7 @@ import type { DisplayConfigResource } from '@clerk/types';
 import type { ParsedQs } from 'qs';
 import qs from 'qs';
 
-import { hasBannedProtocol, isValidUrl } from '../../utils';
+import { getFirstAllowedRedirectAndWarn, hasBannedProtocol, isValidUrl } from '../../utils';
 import type { SignInCtx, SignUpCtx } from '../types';
 
 type ExtractAuthUrlKey =
@@ -11,7 +11,7 @@ type ExtractAuthUrlKey =
   | keyof Pick<SignInCtx, 'afterSignUpUrl' | 'afterSignInUrl'>;
 
 type ExtractAuthPropOptions =
-  | { queryParams: ParsedQs; displayConfig: DisplayConfigResource } & (
+  | { queryParams: ParsedQs; displayConfig: DisplayConfigResource; allowedRedirectOrigins: string[] } & (
       | {
           ctx: Omit<SignUpCtx, 'componentName'>;
         }
@@ -32,17 +32,20 @@ type ExtractAuthPropOptions =
  */
 export const extractAuthProp = (
   key: ExtractAuthUrlKey,
-  { ctx, queryParams, displayConfig }: ExtractAuthPropOptions,
+  { ctx, queryParams, displayConfig, allowedRedirectOrigins }: ExtractAuthPropOptions,
 ): string => {
   const snakeCaseField = camelToSnake(key);
   const queryParamValue = queryParams[snakeCaseField];
 
-  const url =
-    (typeof queryParamValue === 'string' ? queryParamValue : null) ||
-    (typeof queryParams.redirect_url === 'string' ? queryParams.redirect_url : null) ||
-    ctx[key] ||
-    ctx.redirectUrl ||
-    displayConfig[key];
+  const queryParamUrl = getFirstAllowedRedirectAndWarn(
+    [
+      typeof queryParamValue === 'string' ? queryParamValue : null,
+      typeof queryParams.redirect_url === 'string' ? queryParams.redirect_url : null,
+    ].filter(i => i !== null) as string[],
+    allowedRedirectOrigins,
+  );
+
+  const url = queryParamUrl || ctx[key] || ctx.redirectUrl || displayConfig[key];
 
   if (!isValidUrl(url, { includeRelativeUrls: true }) || hasBannedProtocol(url)) {
     return '';

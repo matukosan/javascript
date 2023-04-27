@@ -467,10 +467,7 @@ export type BuildUrlWithAuthParams = {
 
 // TODO: Make sure Isomorphic Clerk navigate can work with the correct type:
 // (to: string) => Promise<unknown>
-export type CustomNavigation = (
-  to: string,
-  options?: { secure?: boolean; fallbackUrls?: string[] },
-) => Promise<unknown> | void;
+export type CustomNavigation = (to: string) => Promise<unknown> | void;
 
 export type ClerkThemeOptions = DeepSnakeToCamel<DeepPartial<DisplayThemeJSON>>;
 

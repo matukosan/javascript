@@ -61,7 +61,6 @@ import {
   createPageLifecycle,
   errorThrower,
   getClerkQueryParam,
-  getFirstAllowedRedirectAndWarn,
   hasExternalAccountSignUpError,
   ignoreEventValue,
   inActiveBrowserTab,
@@ -599,20 +598,9 @@ export default class Clerk implements ClerkInterface {
     return unsubscribe;
   };
 
-  public navigate: CustomNavigation = async (to, navigateOptions): Promise<unknown> => {
+  public navigate: CustomNavigation = async (to): Promise<unknown> => {
     if (!to || !inBrowser()) {
       return;
-    }
-
-    if (navigateOptions?.secure) {
-      const newTo = getFirstAllowedRedirectAndWarn(
-        [to, ...(navigateOptions.fallbackUrls || [])],
-        this.allowedRedirectOrigins,
-      );
-      if (!newTo) {
-        return;
-      }
-      to = newTo;
     }
 
     const toURL = new URL(to, window.location.href);
